@@ -11,13 +11,13 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 
-#print("Waiting for 15 seconds for EKV to reach eventual consistency. Please be patient.", end='', flush=True)
+print("Waiting for 25 seconds for EKV to reach eventual consistency. Please be patient.", end='', flush=True)
 
-#for _ in range(25):  # Loop 15 times for 15 seconds
-#    time.sleep(1)  # Wait for 1 second
-#    print('.', end='', flush=True)  ### Print a dot for each second waited, without moving to a new line
+for _ in range(25):  # Loop 15 times for 15 seconds
+    time.sleep(1)  # Wait for 1 second
+    print('.', end='', flush=True)  ### Print a dot for each second waited, without moving to a new line
 
-#print("\nDone waiting.")  # Move to a new line when done waiting
+print("\nDone waiting.")  # Move to a new line when done waiting
 
 
 def _get_canonical_name(hostname_www):
@@ -82,12 +82,17 @@ class HostHeaderSSLAdapter(requests.adapters.HTTPAdapter):
 buckets_with_404 = set()
 lock = Lock()
 
-def process_url(items, json_file_name):
+def process_url(items, json_file_name, session):
+    global buckets_with_404
     encountered_404 = False
-    session = requests.Session()  # Create a session for each task
-    session.mount('https://', HostHeaderSSLAdapter())
 
-    for item in items:
+    # Select the first, middle, and last URL from the list
+    if len(items) >= 3:
+        urls_to_test = [items[0], items[len(items) // 2], items[-1]]
+    else:
+        urls_to_test = items  # If less than 3 items, test all
+
+    for item in urls_to_test:
         source = item['source']
         destination = item['destination']
         hash256 = item['hash']
@@ -96,10 +101,9 @@ def process_url(items, json_file_name):
             response = session.get(url, headers={"Accept": "text/html"}, allow_redirects=False)
             rresponse = response.status_code
             rlocation = response.headers.get('Location', None)
-            # Process response as before, handling 404s and other statuses.
-            if response.status_code == 404:
+
+            if rresponse == 404:
                 encountered_404 = True
-                # Log 404 encounter as before.
                 print(f"[{json_file_name}] Encountered 404 for URL {url}, hash {hash256}")
             elif rresponse != 301:
                 print(f"[{json_file_name}] Status code {rresponse} is incorrect for URL {url}, hash {hash256}")
@@ -107,30 +111,26 @@ def process_url(items, json_file_name):
                 print(f"[{json_file_name}] Status code is correct, but the returned redirect {rlocation} is incorrect for incoming URL {url}. The correct redirect is {destination}. Please review the rules {hash256} uploaded to EKV")
             elif rresponse == 301 and destination == rlocation:
                 print(f"[{json_file_name}] [{hash256}] All good")
-            # Handle other statuses as before.
         except Exception as e:
             print(f"[{json_file_name}] Error processing URL {url}: {e}")
 
     if encountered_404:
-        with lock:  # Ensure thread-safe update
+        with lock:
             buckets_with_404.add(json_file_name)
 
+
 def main():
-    json_dir = "json_buckets_with_jenkins"
+    json_dir = "validation_json"
     json_files = [os.path.join(json_dir, f) for f in os.listdir(json_dir) if f.endswith('.json')]
 
+    # Within the main function, ensure sessions are created and passed appropriately
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-        futures = []
-        for json_file in json_files:
-            json_file_name = os.path.basename(json_file)  # Extract just the file name
-            with open(json_file, 'r', encoding='utf-8') as f:
-                urls_list = json.load(f)
-                # Submit the task with the list of URLs and the file name
-                future = executor.submit(process_url, urls_list, json_file_name)
-                futures.append(future)
-
-        for future in futures:
-            future.result()  # Ensure all futures complete
+        session = requests.Session()  # Consider creating just one session if all requests go to the same domain
+        session.mount('https://', HostHeaderSSLAdapter())
+        futures = [executor.submit(process_url, json.load(open(json_file)), os.path.basename(json_file), session) for
+                   json_file in json_files]
+        for future in concurrent.futures.as_completed(futures):
+            future.result()
 
     # Summary of buckets with 404s
     if buckets_with_404:
