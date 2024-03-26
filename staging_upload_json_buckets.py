@@ -73,7 +73,7 @@ def upload_json_file(json_file_path, session):
 
 def upload_files_in_directory(json_output_dir, session):
     json_files = [os.path.join(json_output_dir, file) for file in os.listdir(json_output_dir) if file.endswith('.json')]
-    num_threads = 4  # Example thread count
+    num_threads = 2  # Example thread count
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
         executor.map(lambda file: upload_json_file(file, session), json_files)
 
