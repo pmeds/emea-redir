@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo 'Testing the uploaded rules'
                 script {
-                    if (fileExists('json_buckets_with_jenkins')) {
+                    if (fileExists('validation_json')) {
                         sh 'echo "testing uploaded rules"'
                         sh 'python3 staging_url_validation.py'
                     }
