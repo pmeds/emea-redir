@@ -1,7 +1,6 @@
 import csv
 import json
 import os
-from collections import defaultdict
 
 def jenkins_one_at_a_time_hash(key):
     hash = 0
@@ -22,7 +21,7 @@ def jenkins_one_at_a_time_hash(key):
     return hash
 
 
-def create_json_buckets_with_jenkins(csv_input_path, json_output_dir, total_buckets=2500):
+def create_json_buckets_with_jenkins(csv_input_path, json_output_dir, total_buckets=35000):
     # Ensure the output directory exists
     os.makedirs(json_output_dir, exist_ok=True)
 
@@ -38,7 +37,6 @@ def create_json_buckets_with_jenkins(csv_input_path, json_output_dir, total_buck
             # Construct the JSON object for the current row
             json_object = {
                 "hash": row['hash'],
-                "source": row['from'],
                 "destination": row['to']
             }
             # Append the JSON object to the corresponding bucket list
