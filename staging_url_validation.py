@@ -8,7 +8,7 @@ import concurrent.futures
 import os
 import json
 
-"""
+
 print("Waiting for 15 seconds for EKV to reach eventual consistency. Please be patient.", end='', flush=True)
 
 for _ in range(15):  # Loop 15 times for 15 seconds
@@ -16,7 +16,7 @@ for _ in range(15):  # Loop 15 times for 15 seconds
     print('.', end='', flush=True)  ### Print a dot for each second waited, without moving to a new line
 
 print("\nDone waiting.")  # Move to a new line when done waiting
-"""
+
 
 def _get_canonical_name(hostname_www):
     print(f'Attempting to get canonical name for {hostname_www}')
@@ -105,7 +105,7 @@ def main():
     json_files = [os.path.join(json_dir, file) for file in os.listdir(json_dir) if file.endswith('.json')]
 
     # Define the number of threads you want to use
-    num_threads = 6  # Example thread count
+    num_threads = 8  # Example thread count
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         for json_file in json_files:
