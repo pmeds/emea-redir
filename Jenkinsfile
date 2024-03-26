@@ -9,7 +9,8 @@ chmod 754 create_json_buckets.py
 chmod 754 staging_upload_json_buckets.py
 chmod 754 staging_url_validation.py
 mkdir json_buckets_with_jenkins
-wget https://emea-redirects.us-southeast-1.linodeobjects.com/sample_modified_clean_csv_file.tgz'''
+wget https://emea-redirects.us-southeast-1.linodeobjects.com/sample_modified_clean_csv_file.tgz
+'''
       }
     }
 
@@ -54,8 +55,9 @@ wget https://emea-redirects.us-southeast-1.linodeobjects.com/sample_modified_cle
       }
     }
 
-    stage('Delete environment') {
-      steps {
+    post {
+      always {
+        // This will always clean the workspace regardless of the pipeline result
         cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenSuccess: true)
       }
     }
