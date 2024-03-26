@@ -1,5 +1,3 @@
-import time
-import pandas as pd
 import requests
 import dns.resolver
 import hashlib
@@ -7,15 +5,19 @@ from urllib.parse import urlparse
 import concurrent.futures
 import os
 import json
+from threading import Lock
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 
-print("Waiting for 15 seconds for EKV to reach eventual consistency. Please be patient.", end='', flush=True)
+#print("Waiting for 15 seconds for EKV to reach eventual consistency. Please be patient.", end='', flush=True)
 
-for _ in range(15):  # Loop 15 times for 15 seconds
-    time.sleep(1)  # Wait for 1 second
-    print('.', end='', flush=True)  ### Print a dot for each second waited, without moving to a new line
+#for _ in range(25):  # Loop 15 times for 15 seconds
+#    time.sleep(1)  # Wait for 1 second
+#    print('.', end='', flush=True)  ### Print a dot for each second waited, without moving to a new line
 
-print("\nDone waiting.")  # Move to a new line when done waiting
+#print("\nDone waiting.")  # Move to a new line when done waiting
 
 
 def _get_canonical_name(hostname_www):
@@ -77,44 +79,67 @@ class HostHeaderSSLAdapter(requests.adapters.HTTPAdapter):
         return super(HostHeaderSSLAdapter, self).send(request, **kwargs)
 
 
-def process_url(item, json_file_name):
-    source = item['source']
-    hash256 = item['hash']
-    destination = item['destination']
-    url = 'https://paulm-sony.test.edgekey.net' + source
-    headers = {"Accept": "text/html"}
+buckets_with_404 = set()
+lock = Lock()
 
-    session = requests.Session()
+def process_url(items, json_file_name):
+    encountered_404 = False
+    session = requests.Session()  # Create a session for each task
     session.mount('https://', HostHeaderSSLAdapter())
-    response = session.get(url, headers=headers, allow_redirects=False)
 
-    rresponse = response.status_code
-    rlocation = response.headers.get('Location', None)
-    source_hash = hashlib.sha256(source.encode('utf-8')).hexdigest()
+    for item in items:
+        source = item['source']
+        destination = item['destination']
+        hash256 = item['hash']
+        url = 'https://paulm-sony.test.edgekey.net' + source
+        try:
+            response = session.get(url, headers={"Accept": "text/html"}, allow_redirects=False)
+            rresponse = response.status_code
+            rlocation = response.headers.get('Location', None)
+            # Process response as before, handling 404s and other statuses.
+            if response.status_code == 404:
+                encountered_404 = True
+                # Log 404 encounter as before.
+                print(f"[{json_file_name}] Encountered 404 for URL {url}, hash {hash256}")
+            elif rresponse != 301:
+                print(f"[{json_file_name}] Status code {rresponse} is incorrect for URL {url}, hash {hash256}")
+            elif rresponse == 301 and destination != rlocation:
+                print(f"[{json_file_name}] Status code is correct, but the returned redirect {rlocation} is incorrect for incoming URL {url}. The correct redirect is {destination}. Please review the rules {hash256} uploaded to EKV")
+            elif rresponse == 301 and destination == rlocation:
+                print(f"[{json_file_name}] [{hash256}] All good")
+            # Handle other statuses as before.
+        except Exception as e:
+            print(f"[{json_file_name}] Error processing URL {url}: {e}")
 
-    if rresponse != 301:
-        print(f"[{json_file_name}] Status code {rresponse} is incorrect for URL {url}, hash {source_hash}")
-    elif rresponse == 301 and destination != rlocation:
-        print(f"[{json_file_name}] Status code is correct, but the returned redirect {rlocation} is incorrect for incoming URL {url}.")
-        print(f"The correct redirect is {destination}. Please review the rules {source_hash} uploaded to EKV")
-    elif rresponse == 301 and destination == rlocation:
-        print(f"[{json_file_name}] [{hash256}]All good")
+    if encountered_404:
+        with lock:  # Ensure thread-safe update
+            buckets_with_404.add(json_file_name)
 
 def main():
-    json_dir = "json_buckets_with_jenkins"  # Hardcoded path to the directory
-    json_files = [os.path.join(json_dir, file) for file in os.listdir(json_dir) if file.endswith('.json')]
+    json_dir = "json_buckets_with_jenkins"
+    json_files = [os.path.join(json_dir, f) for f in os.listdir(json_dir) if f.endswith('.json')]
 
-    # Define the number of threads you want to use
-    num_threads = 8  # Example thread count
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+        futures = []
         for json_file in json_files:
             json_file_name = os.path.basename(json_file)  # Extract just the file name
             with open(json_file, 'r', encoding='utf-8') as f:
                 urls_list = json.load(f)
-                # Submit all URLs in the current JSON file to the executor, passing the file name as well
-                futures = [executor.submit(process_url, item, json_file_name) for item in urls_list]
-                concurrent.futures.wait(futures)  # Wait for all futures in the current file
+                # Submit the task with the list of URLs and the file name
+                future = executor.submit(process_url, urls_list, json_file_name)
+                futures.append(future)
+
+        for future in futures:
+            future.result()  # Ensure all futures complete
+
+    # Summary of buckets with 404s
+    if buckets_with_404:
+        print("\nSummary of buckets containing URLs that returned a 404:")
+        for bucket in sorted(buckets_with_404):
+            print(bucket)
+    else:
+        print("\nNo buckets contained URLs that returned a 404.")
 
 if __name__ == "__main__":
     main()
+
