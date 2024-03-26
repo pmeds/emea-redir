@@ -21,7 +21,7 @@ pipeline {
                 echo 'Generating all buckets'
                 script {
                     if (fileExists('json_buckets_with_jenkins')) {
-                        sh 'tar -xzfv sample_modified_clean_csv_file.tgz'
+                        sh 'tar -xzvf sample_modified_clean_csv_file.tgz'
                         sh 'python3 create_json_buckets.py'
                     }
                 }
