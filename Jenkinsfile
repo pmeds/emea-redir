@@ -12,7 +12,7 @@ pipeline {
                 chmod 754 staging_url_validation.py
                 mkdir json_buckets_with_jenkins
                 mkdir validation_json
-                wget https://emea-redirects.us-southeast-1.linodeobjects.com/sample_modified_clean_csv_file.tgz
+                wget https://emea-redirects.us-southeast-1.linodeobjects.com/modified_no_whitespace_clean_csv_file.tgz
                 '''
             }
         }
@@ -22,7 +22,7 @@ pipeline {
                 echo 'Generating all buckets'
                 script {
                     if (fileExists('json_buckets_with_jenkins')) {
-                        sh 'tar -xzvf sample_modified_clean_csv_file.tgz'
+                        sh 'tar -xzvf modified_no_whitespace_clean_csv_file.tgz'
                         sh 'python3 create_json_buckets.py'
                         sh 'python3 create_validation_buckets.py'
                     }
