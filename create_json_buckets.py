@@ -33,7 +33,7 @@ def create_json_buckets_with_jenkins(csv_input_path, json_output_dir, total_buck
         for row in reader:
             # Use the "from" field with the Jenkins hash function to generate a bucket number
             bucket_number = jenkins_one_at_a_time_hash(row['from']) % total_buckets + 1
-            print(row['from'],bucket_number)
+            #print(row['from'],bucket_number)
             # Construct the JSON object for the current row
             json_object = {
                 "hash": row['hash'],
