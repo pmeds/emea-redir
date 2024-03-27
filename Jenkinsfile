@@ -58,7 +58,7 @@ pipeline {
     post {
         always {
             // This will always clean the workspace regardless of the pipeline result
-            cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenSuccess: true)
+            cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenSuccess: false)
         }
     }
 }
