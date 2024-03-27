@@ -8,6 +8,7 @@ pipeline {
                 sh '''
                 ls -la
                 chmod 754 create_json_buckets.py
+                chmod 754 create_validation_buckets.py
                 chmod 754 staging_upload_json_buckets.py
                 chmod 754 staging_url_validation.py
                 mkdir json_buckets_with_jenkins
