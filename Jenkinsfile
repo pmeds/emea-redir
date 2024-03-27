@@ -13,7 +13,7 @@ pipeline {
                 chmod 754 staging_url_validation.py
                 mkdir json_buckets_with_jenkins
                 mkdir validation_json
-                wget https://emea-redirects.us-southeast-1.linodeobjects.com/modified_no_whitespace_clean_csv_file.tgz
+                wget https://emea-redirects.us-southeast-1.linodeobjects.com/modified_no_whitespace_clean_csv_file_v2.tgz
                 '''
             }
         }
@@ -23,7 +23,7 @@ pipeline {
                 echo 'Generating all buckets'
                 script {
                     if (fileExists('json_buckets_with_jenkins')) {
-                        sh 'tar -xzvf modified_no_whitespace_clean_csv_file.tgz'
+                        sh 'tar -xzvf modified_no_whitespace_clean_csv_file_v2.tgz'
                         sh 'python3 create_json_buckets.py'
                         sh 'python3 create_validation_buckets.py'
                     }
@@ -33,10 +33,10 @@ pipeline {
 
         stage('Upload Rule') {
             steps {
-                echo 'checking if there is a csv file for games'
+                echo 'Checking if bucket directory exists'
                 script {
                     if (fileExists('json_buckets_with_jenkins')) {
-                        sh 'echo "uploading games rules"'
+                        sh 'echo "uploading redirect buckets"'
                         sh 'python3 staging_upload_json_buckets.py'
                     }
                 }
