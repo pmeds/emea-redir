@@ -4,7 +4,6 @@ import dns.resolver
 import os
 from concurrent.futures import ThreadPoolExecutor
 import sys
-from ratelimit import limits, sleep_and_retry
 
 requests.packages.urllib3.disable_warnings()
 # DNS resolution functions
@@ -55,12 +54,7 @@ class HostHeaderSSLAdapter(requests.adapters.HTTPAdapter):
         request.url = request.url.replace(hostname, resolved_ip)
         request.headers['Host'] = hostname
         return super(HostHeaderSSLAdapter, self).send(request, **kwargs)
-# Define the rate limit: 39 calls per second
-CALLS = 39
-SECONDS = 1
 
-@sleep_and_retry
-@limits(calls=CALLS, period=SECONDS)
 def upload_json_file(json_file_path, session):
     try:
         with open(json_file_path, 'r', encoding='utf-8') as json_file:
@@ -68,7 +62,7 @@ def upload_json_file(json_file_path, session):
             #print(json_data)
         url = 'https://paulm-sony.test.edgekey.net/emea/upload'
         file_name_without_extension = os.path.splitext(os.path.basename(json_file_path))[0]
-        headers = {"Content-Type": "application/json", "User-Agent": "custom-agent", "X-File-Name": file_name_without_extension, "Pragma": "akamai-x-im-trace, akamai-x-ew-debug-rp, akamai-x-ew-onclientrequest, akamai-x-ew-onclientresponse,akamai-x-ew-debug-subs, akamai-x-get-client-ip, akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-nonces, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, x-akamai-feo-state, X-Content, X-Hosts, akamai-x-get-request-id, akamai-x-ew-debug", "Akamai-EW-Trace": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ2Y2QiOiI0MTIyIiwia2lkIjo0LCJhY2wiOlsicGF1bG0tc29ueS50ZXN0LmVkZ2VrZXkubmV0Il0sImV4cCI6MTcxMTUxNTI3NiwiaWF0IjoxNzExNDcyMDc2LCJqdGkiOiIyMWEwYjhiMy0zNjZlLTQzYWQtOThiMC1iOWU2M2I3NGM2ZDcifQ.AWe01xw4AUfPBSj0BOwVRSqDIqBX9H5LWn9O_8RoX4JiHYyeIvnwtol6dN4q-Yzq9JJLYosFTm8tIRuhmqB9zTlA8y41re17Tr79xeMlwMk8wFy4_I--QsLe7IfRw2gluVG954OGUfxENmMpRTNmaeKBSr1RRpnKYKNtv2HKMDaTar2c6j_eRIAnGAfWVc84kDUHrhpphI1keYWcwmzWf8Ho4sxdVST6ZkxPRcc2bQ-QBuor-6yCjSQlv2xfLlx4gczlDr6C93mcEGz8LrSYBsn8eIwnSad_5IA9qTE8ef9aylkJy7SEAwLpyDAczCmz1yylArcbKt12Ozp8WkXNsg"}
+        headers = {"Content-Type": "application/json", "User-Agent": "custom-agent", "X-File-Name": file_name_without_extension, "Pragma": "akamai-x-im-trace, akamai-x-ew-debug-rp, akamai-x-ew-onclientrequest, akamai-x-ew-onclientresponse,akamai-x-ew-debug-subs, akamai-x-get-client-ip, akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-nonces, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, x-akamai-feo-state, X-Content, X-Hosts, akamai-x-get-request-id, akamai-x-ew-debug", "Akamai-EW-Trace": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ2Y2QiOiI0MTIyIiwia2lkIjo0LCJhY2wiOlsicGF1bG0tc29ueS50ZXN0LmVkZ2VrZXkubmV0Il0sImV4cCI6MTcxMTQ1OTEyNywiaWF0IjoxNzExNDE1OTI3LCJqdGkiOiI4NGRiMDVhOS1iYWVhLTRjZTAtYjYwYS00YWI5MDVmNDY5YjAifQ.mFoVyKaRmtoQPSZ6cu1BgRCzq-7rUmHE7RNMytKVZYQ0yq3rdiGebn2gXtJtoaYN9LzjkBRVjQJ6WW5QuSk8KJ4-FBQD2D31_MTBK9mTIk6A1x_UHkGbrGyl8raa5beBiDl0ARmP5eVJZsgtbg8sXbNE7WjBT5XMHl4XVVGqP1nkCgHdWXlMMDzP1yNE8ayyjSVCDL8C1f3u-gonU3nwxZ_ynOniMDuMICi2GVjiU9G2ej-IAXwahItCP28_U4N8nBmE3ZvN7ibwnKlZWXf4nJFZnUi0uR51qEdXir7IJ7HX8REHxgOK4R2MvwYX8j8GxmHoG4m1rr1L_1qgWjy2vw"}
         # print(headers)
         response = session.post(url, json=json_data, headers=headers, verify=False)
         rheaders = response.headers
@@ -79,8 +73,9 @@ def upload_json_file(json_file_path, session):
 
 def upload_files_in_directory(json_output_dir, session):
     json_files = [os.path.join(json_output_dir, file) for file in os.listdir(json_output_dir) if file.endswith('.json')]
-    for json_file in json_files:
-        upload_json_file(json_file, session)
+    num_threads = 2  # Example thread count
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        executor.map(lambda file: upload_json_file(file, session), json_files)
 
 if __name__ == "__main__":
     json_output_dir = 'json_buckets_with_jenkins'
