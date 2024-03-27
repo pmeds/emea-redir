@@ -68,7 +68,7 @@ def create_json_buckets_with_jenkins(csv_input_path, json_output_dir, total_buck
     print(f"Minimum number of URLs in a bucket: {min_urls}")
     print(f"Maximum number of URLs in a bucket: {max_urls}")
 
-csv_input_path = 'sample_modified_clean_csv_file.csv'
+csv_input_path = 'modified_no_whitespace_clean_csv_file.csv'
 json_output_dir = 'validation_json'
 
 create_json_buckets_with_jenkins(csv_input_path, json_output_dir)
