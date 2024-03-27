@@ -62,7 +62,7 @@ def upload_json_file(json_file_path, session):
             #print(json_data)
         url = 'https://paulm-sony.test.edgekey.net/emea/upload'
         file_name_without_extension = os.path.splitext(os.path.basename(json_file_path))[0]
-        headers = {"Content-Type": "application/json", "User-Agent": "custom-agent", "X-File-Name": file_name_without_extension, "Pragma": "akamai-x-ew-debug-rp, akamai-x-ew-onclientrequest, akamai-x-ew-onclientresponse,akamai-x-ew-debug-subs, akamai-x-get-extracted-values, X-Hosts, akamai-x-get-request-id, akamai-x-ew-debug", "Akamai-EW-Trace": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ2Y2QiOiI0MTIyIiwia2lkIjo0LCJhY2wiOlsicGF1bG0tc29ueS50ZXN0LmVkZ2VrZXkubmV0Il0sImV4cCI6MTcxMTQ1OTEyNywiaWF0IjoxNzExNDE1OTI3LCJqdGkiOiI4NGRiMDVhOS1iYWVhLTRjZTAtYjYwYS00YWI5MDVmNDY5YjAifQ.mFoVyKaRmtoQPSZ6cu1BgRCzq-7rUmHE7RNMytKVZYQ0yq3rdiGebn2gXtJtoaYN9LzjkBRVjQJ6WW5QuSk8KJ4-FBQD2D31_MTBK9mTIk6A1x_UHkGbrGyl8raa5beBiDl0ARmP5eVJZsgtbg8sXbNE7WjBT5XMHl4XVVGqP1nkCgHdWXlMMDzP1yNE8ayyjSVCDL8C1f3u-gonU3nwxZ_ynOniMDuMICi2GVjiU9G2ej-IAXwahItCP28_U4N8nBmE3ZvN7ibwnKlZWXf4nJFZnUi0uR51qEdXir7IJ7HX8REHxgOK4R2MvwYX8j8GxmHoG4m1rr1L_1qgWjy2vw"}
+        headers = {"Content-Type": "application/json", "User-Agent": "custom-agent", "X-File-Name": file_name_without_extension, "Pragma": "akamai-x-ew-debug-rp, akamai-x-ew-onclientrequest, akamai-x-ew-onclientresponse,akamai-x-ew-debug-subs, akamai-x-get-extracted-values, X-Hosts, akamai-x-get-request-id, akamai-x-ew-debug"}
         # print(headers)
         response = session.post(url, json=json_data, headers=headers, verify=False)
         rheaders = response.headers
