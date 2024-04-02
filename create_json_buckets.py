@@ -66,7 +66,7 @@ def create_json_buckets_with_jenkins(csv_input_path, json_output_dir, total_buck
     print(f"Minimum number of URLs in a bucket: {min_urls}")
     print(f"Maximum number of URLs in a bucket: {max_urls}")
 
-csv_input_path = 'sample_clean_no_whitespace_updated_urls.csv'
+csv_input_path = 'clean_no_whitespace_updated_urls.csv'
 json_output_dir = 'json_buckets_with_jenkins'
 
 create_json_buckets_with_jenkins(csv_input_path, json_output_dir)
