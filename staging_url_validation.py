@@ -32,10 +32,10 @@ def _get_canonical_name(hostname_www):
         return None
 
 
-get_canonical_name = _get_canonical_name('paulm-sony.test.edgekey.net')
+get_canonical_name = _get_canonical_name('shopflix-upload.akamaized.net')
 print(get_canonical_name)
 
-staging_host = get_canonical_name.replace('akamaiedge', 'akamaiedge-staging')
+staging_host = get_canonical_name.replace('akamai', 'akamai-staging')
 print(staging_host)
 
 
@@ -58,7 +58,7 @@ for item in resultDNSA:
 class HostHeaderSSLAdapter(requests.adapters.HTTPAdapter):
     def resolve(self, hostname):
         ips = resultant_str
-        resolutions = {'paulm-sony.test.edgekey.net': ips}
+        resolutions = {'shopflix-upload.akamaized.net': ips}
         #print(resolutions)
         return resolutions.get(hostname)
 
@@ -96,7 +96,7 @@ def process_url(items, json_file_name, session):
         source = item['source']
         destination = item['destination']
         hash256 = item['hash']
-        url = 'https://paulm-sony.test.edgekey.net' + source
+        url = 'https://shopflix-upload.akamaized.net' + source
         try:
             response = session.get(url, headers={"Accept": "text/html"}, allow_redirects=False)
             rresponse = response.status_code
