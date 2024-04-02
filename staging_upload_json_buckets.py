@@ -23,9 +23,9 @@ def _get_canonical_name(hostname_www):
         print('%s has canonical name %s' % (hostname_www, canonical_name))
     return canonical_name
 
-canonical_name = _get_canonical_name('paulm-sony.test.edgekey.net')
+canonical_name = _get_canonical_name('shopflix-upload.akamaized.net')
 if canonical_name:
-    staging_host = canonical_name.replace('akamaiedge', 'akamaiedge-staging')
+    staging_host = canonical_name.replace('akamai', 'akamai-staging')
 else:
     sys.exit('Failed to get canonical name')
 
@@ -60,7 +60,7 @@ def upload_json_file(json_file_path, session):
         with open(json_file_path, 'r', encoding='utf-8') as json_file:
             json_data = json.load(json_file)
             #print(json_data)
-        url = 'https://paulm-sony.test.edgekey.net/emea/upload'
+        url = 'https://shopflix-upload.akamaized.net/emea/upload'
         file_name_without_extension = os.path.splitext(os.path.basename(json_file_path))[0]
         headers = {"Content-Type": "application/json", "User-Agent": "custom-agent", "X-File-Name": file_name_without_extension, "Pragma": "akamai-x-ew-debug-rp, akamai-x-ew-onclientrequest, akamai-x-ew-onclientresponse,akamai-x-ew-debug-subs, akamai-x-get-extracted-values, X-Hosts, akamai-x-get-request-id, akamai-x-ew-debug"}
         # print(headers)
