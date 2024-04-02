@@ -13,7 +13,7 @@ pipeline {
                 chmod 754 staging_url_validation.py
                 mkdir json_buckets_with_jenkins
                 mkdir validation_json
-                wget https://emea-redirects.us-southeast-1.linodeobjects.com/modified_no_whitespace_clean_csv_file_v2.tgz
+                wget https://emea-redirects.us-southeast-1.linodeobjects.com/sample_clean_no_whitespace.tgz
                 '''
             }
         }
@@ -23,7 +23,7 @@ pipeline {
                 echo 'Generating all buckets'
                 script {
                     if (fileExists('json_buckets_with_jenkins')) {
-                        sh 'tar -xzvf modified_no_whitespace_clean_csv_file_v2.tgz'
+                        sh 'tar -xzvf sample_clean_no_whitespace.tgz'
                         sh 'python3 create_json_buckets.py'
                         sh 'python3 create_validation_buckets.py'
                     }
@@ -59,7 +59,7 @@ pipeline {
     post {
         always {
             // This will always clean the workspace regardless of the pipeline result
-            cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenSuccess: false)
+            cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenSuccess: true)
         }
     }
 }
