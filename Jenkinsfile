@@ -9,7 +9,6 @@ pipeline {
                 ls -la
                 chmod 754 create_json_buckets.py
                 chmod 754 create_validation_buckets.py
-                chmod 754 prod_upload_json_buckets.py
                 chmod 754 prod_url_validation.py
                 mkdir json_buckets_with_jenkins
                 mkdir validation_json
@@ -24,20 +23,7 @@ pipeline {
                 script {
                     if (fileExists('json_buckets_with_jenkins')) {
                         sh 'tar -xzvf clean_no_whitespace_updated_urls.tgz'
-                        sh 'python3 create_json_buckets.py'
                         sh 'python3 create_validation_buckets.py'
-                    }
-                }
-            }
-        }
-
-        stage('Upload Rule') {
-            steps {
-                echo 'Checking if bucket directory exists'
-                script {
-                    if (fileExists('json_buckets_with_jenkins')) {
-                        sh 'echo "uploading redirect buckets"'
-                        sh 'python3 prod_upload_json_buckets.py'
                     }
                 }
             }
