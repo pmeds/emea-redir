@@ -37,7 +37,7 @@ pipeline {
                 script {
                     if (fileExists('json_buckets_with_jenkins')) {
                         sh 'echo "uploading redirect buckets"'
-                        sh 'python3 staging_upload_json_buckets.py'
+                        sh 'python3 prod_upload_json_buckets.py'
                     }
                 }
             }
@@ -49,7 +49,7 @@ pipeline {
                 script {
                     if (fileExists('validation_json')) {
                         sh 'echo "testing uploaded rules"'
-                        sh 'python3 staging_url_validation.py'
+                        sh 'python3 prod_url_validation.py'
                     }
                 }
             }
